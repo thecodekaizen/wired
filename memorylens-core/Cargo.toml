@@ -1,0 +1,23 @@
+[package]
+name = "memorylens-core"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "staticlib", "lib"]
+name = "memorylens_core"
+
+[[bin]]
+name = "uniffi-bindgen"
+path = "src/bin/uniffi-bindgen.rs"
+required-features = ["uniffi/cli"]
+
+[dependencies]
+mach2 = "0.7.0"
+libproc = "0.14.11"
+rusqlite = { version = "0.40.2", features = ["bundled"] }
+uniffi = { version = "0.32.1", features = ["cli"] }
+libc = "0.2.189"
+thiserror = "2.0.20"
+
+[build-dependencies]

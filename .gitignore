@@ -1,0 +1,7 @@
+target/
+.DS_Store
+*.xcworkspace/
+MemoryLens.xcodeproj/
+xcuserdata/
+*.xcframework
+MemoryLensCore.xcframework/

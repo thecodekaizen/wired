@@ -1,0 +1,6 @@
+[workspace]
+members = [
+    "memorylens-core",
+    "debug-sampler",
+]
+resolver = "2"
