@@ -1,0 +1,28 @@
+name: MemoryLens
+options:
+  bundleIdPrefix: com.memorylens
+targets:
+  MemoryLens:
+    type: application
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources: [MemoryLens]
+    info:
+      path: MemoryLens/Info.plist
+      properties:
+        LSUIElement: true # Run as a menu bar app
+    dependencies:
+      - package: MemoryLensCorePackage
+  memorylens-helperd:
+    type: tool
+    platform: macOS
+    deploymentTarget: "13.0"
+    sources: [memorylens-helperd]
+    info:
+      path: memorylens-helperd/Info.plist
+      properties:
+        SMAuthorizedClients:
+          - identifier "com.memorylens.app" and anchor apple generic and certificate leaf[subject.OU] = "YOUR_TEAM_ID"
+packages:
+  MemoryLensCorePackage:
+    path: MemoryLensCorePackage
