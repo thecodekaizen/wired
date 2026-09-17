@@ -497,6 +497,22 @@ fileprivate struct FfiConverterUInt64: FfiConverterPrimitive {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterInt64: FfiConverterPrimitive {
+    typealias FfiType = Int64
+    typealias SwiftType = Int64
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Int64 {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: Int64, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterString: FfiConverter {
     typealias SwiftType = String
     typealias FfiType = RustBuffer
@@ -538,6 +554,64 @@ fileprivate struct FfiConverterString: FfiConverter {
         writeInt(&buf, len)
         writeBytes(&buf, value.utf8)
     }
+}
+
+
+public struct FfiHistoryRecord: Equatable, Hashable {
+    public var timestamp: Int64
+    public var totalBytes: UInt64
+    public var usedBytes: UInt64
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(timestamp: Int64, totalBytes: UInt64, usedBytes: UInt64) {
+        self.timestamp = timestamp
+        self.totalBytes = totalBytes
+        self.usedBytes = usedBytes
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension FfiHistoryRecord: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFfiHistoryRecord: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FfiHistoryRecord {
+        return
+            try FfiHistoryRecord(
+                timestamp: FfiConverterInt64.read(from: &buf), 
+                totalBytes: FfiConverterUInt64.read(from: &buf), 
+                usedBytes: FfiConverterUInt64.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: FfiHistoryRecord, into buf: inout [UInt8]) {
+        FfiConverterInt64.write(value.timestamp, into: &buf)
+        FfiConverterUInt64.write(value.totalBytes, into: &buf)
+        FfiConverterUInt64.write(value.usedBytes, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFfiHistoryRecord_lift(_ buf: RustBuffer) throws -> FfiHistoryRecord {
+    return try FfiConverterTypeFfiHistoryRecord.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFfiHistoryRecord_lower(_ value: FfiHistoryRecord) -> RustBuffer {
+    return FfiConverterTypeFfiHistoryRecord.lower(value)
 }
 
 
@@ -754,6 +828,31 @@ public func FfiConverterTypeMemoryError_lower(_ value: MemoryError) -> RustBuffe
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceTypeFfiHistoryRecord: FfiConverterRustBuffer {
+    typealias SwiftType = [FfiHistoryRecord]
+
+    public static func write(_ value: [FfiHistoryRecord], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeFfiHistoryRecord.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [FfiHistoryRecord] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [FfiHistoryRecord]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeFfiHistoryRecord.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeFfiProcessMemory: FfiConverterRustBuffer {
     typealias SwiftType = [FfiProcessMemory]
 
@@ -775,12 +874,34 @@ fileprivate struct FfiConverterSequenceTypeFfiProcessMemory: FfiConverterRustBuf
         return seq
     }
 }
+public func getHistory()throws  -> [FfiHistoryRecord]  {
+    return try  FfiConverterSequenceTypeFfiHistoryRecord.lift(try rustCallWithError(FfiConverterTypeMemoryError_lift) {
+        uniffiCallStatus in
+    uniffi_memorylens_core_fn_func_get_history(uniffiCallStatus
+    )
+})
+}
+public func initializeHistory(dbPath: String)throws   {try rustCallWithError(FfiConverterTypeMemoryError_lift) {
+        uniffiCallStatus in
+    uniffi_memorylens_core_fn_func_initialize_history(
+        FfiConverterString.lower(dbPath),uniffiCallStatus
+    )
+}
+}
 public func listProcesses() -> [FfiProcessMemory]  {
     return try!  FfiConverterSequenceTypeFfiProcessMemory.lift(try! rustCall() {
         uniffiCallStatus in
     uniffi_memorylens_core_fn_func_list_processes(uniffiCallStatus
     )
 })
+}
+public func recordHistorySnapshot(totalBytes: UInt64, usedBytes: UInt64)throws   {try rustCallWithError(FfiConverterTypeMemoryError_lift) {
+        uniffiCallStatus in
+    uniffi_memorylens_core_fn_func_record_history_snapshot(
+        FfiConverterUInt64.lower(totalBytes),
+        FfiConverterUInt64.lower(usedBytes),uniffiCallStatus
+    )
+}
 }
 public func sampleSystem()throws  -> FfiSystemMemory  {
     return try  FfiConverterTypeFfiSystemMemory_lift(try rustCallWithError(FfiConverterTypeMemoryError_lift) {
@@ -805,7 +926,16 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
+    if (uniffi_memorylens_core_checksum_func_get_history() != 65094) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_memorylens_core_checksum_func_initialize_history() != 32436) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_memorylens_core_checksum_func_list_processes() != 38858) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_memorylens_core_checksum_func_record_history_snapshot() != 54135) {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_memorylens_core_checksum_func_sample_system() != 41084) {

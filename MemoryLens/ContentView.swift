@@ -57,18 +57,18 @@ struct ContentView: View {
                     
                     // Process Table
                     Table(monitor.processes) {
-                        TableColumn("PID", value: \.pid) { proc in
+                        TableColumn("PID") { proc in
                             Text("\(proc.pid)")
                                 .foregroundColor(.secondary)
                         }
                         .width(50)
                         
-                        TableColumn("Process", value: \.name) { proc in
+                        TableColumn("Process") { proc in
                             Text(proc.name)
                                 .fontWeight(denyList.contains(proc.name) ? .regular : .semibold)
                         }
                         
-                        TableColumn("Memory", value: \.residentSize) { proc in
+                        TableColumn("Memory") { proc in
                             Text(formatBytes(proc.residentSize))
                                 .monospacedDigit()
                         }

@@ -243,10 +243,26 @@ typedef void (*UniffiForeignFutureCompleteVoid)(uint64_t, UniffiForeignFutureRes
     );
 
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_GET_HISTORY
+#define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_GET_HISTORY
+RustBuffer uniffi_memorylens_core_fn_func_get_history(RustCallStatus *_Nonnull out_status
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_INITIALIZE_HISTORY
+#define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_INITIALIZE_HISTORY
+void uniffi_memorylens_core_fn_func_initialize_history(RustBuffer db_path, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_LIST_PROCESSES
 #define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_LIST_PROCESSES
 RustBuffer uniffi_memorylens_core_fn_func_list_processes(RustCallStatus *_Nonnull out_status
     
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_RECORD_HISTORY_SNAPSHOT
+#define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_RECORD_HISTORY_SNAPSHOT
+void uniffi_memorylens_core_fn_func_record_history_snapshot(uint64_t total_bytes, uint64_t used_bytes, RustCallStatus *_Nonnull out_status
 );
 #endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_SAMPLE_SYSTEM
@@ -515,9 +531,27 @@ void ffi_memorylens_core_rust_future_free_void(uint64_t handle
 void ffi_memorylens_core_rust_future_complete_void(uint64_t handle, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_GET_HISTORY
+#define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_GET_HISTORY
+uint16_t uniffi_memorylens_core_checksum_func_get_history(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_INITIALIZE_HISTORY
+#define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_INITIALIZE_HISTORY
+uint16_t uniffi_memorylens_core_checksum_func_initialize_history(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_LIST_PROCESSES
 #define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_LIST_PROCESSES
 uint16_t uniffi_memorylens_core_checksum_func_list_processes(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_RECORD_HISTORY_SNAPSHOT
+#define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_RECORD_HISTORY_SNAPSHOT
+uint16_t uniffi_memorylens_core_checksum_func_record_history_snapshot(void
     
 );
 #endif

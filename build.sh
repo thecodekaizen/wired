@@ -20,6 +20,12 @@ cargo build --release
 cargo run --bin uniffi-bindgen -- generate --language swift --library ../target/release/libmemorylens_core.dylib --out-dir ../bindings
 cd ..
 
+# Rename the modulemap so Xcode can find it automatically in the XCFramework Headers
+if [ -f "bindings/memorylens_coreFFI.modulemap" ]; then
+    mv bindings/memorylens_coreFFI.modulemap bindings/module.modulemap
+fi
+
+
 if command -v xcodebuild &> /dev/null; then
     if xcode-select -p &> /dev/null; then
         echo "Creating XCFramework..."
