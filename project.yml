@@ -9,6 +9,7 @@ targets:
     sources:
       - MemoryLens
       - MemoryLens/HistoryView.swift
+      - MemoryLens/StorageCleanerView.swift
       - memorylens-helperd/HelperProtocol.swift
     info:
       path: MemoryLens/Info.plist

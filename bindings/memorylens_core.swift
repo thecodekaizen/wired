@@ -513,6 +513,30 @@ fileprivate struct FfiConverterInt64: FfiConverterPrimitive {
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterBool : FfiConverter {
+    typealias FfiType = Int8
+    typealias SwiftType = Bool
+
+    public static func lift(_ value: Int8) throws -> Bool {
+        return value != 0
+    }
+
+    public static func lower(_ value: Bool) -> Int8 {
+        return value ? 1 : 0
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> Bool {
+        return try lift(readInt(&buf))
+    }
+
+    public static func write(_ value: Bool, into buf: inout [UInt8]) {
+        writeInt(&buf, lower(value))
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterString: FfiConverter {
     typealias SwiftType = String
     typealias FfiType = RustBuffer
@@ -681,6 +705,80 @@ public func FfiConverterTypeFfiProcessMemory_lower(_ value: FfiProcessMemory) ->
 }
 
 
+public struct FfiStorageTarget: Equatable, Hashable {
+    public var id: String
+    public var name: String
+    public var category: String
+    public var description: String
+    public var path: String
+    public var sizeBytes: UInt64
+    public var defaultChecked: Bool
+
+    // Default memberwise initializers are never public by default, so we
+    // declare one manually.
+    public init(id: String, name: String, category: String, description: String, path: String, sizeBytes: UInt64, defaultChecked: Bool) {
+        self.id = id
+        self.name = name
+        self.category = category
+        self.description = description
+        self.path = path
+        self.sizeBytes = sizeBytes
+        self.defaultChecked = defaultChecked
+    }
+
+    
+
+    
+}
+
+#if compiler(>=6)
+extension FfiStorageTarget: Sendable {}
+#endif
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public struct FfiConverterTypeFfiStorageTarget: FfiConverterRustBuffer {
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> FfiStorageTarget {
+        return
+            try FfiStorageTarget(
+                id: FfiConverterString.read(from: &buf), 
+                name: FfiConverterString.read(from: &buf), 
+                category: FfiConverterString.read(from: &buf), 
+                description: FfiConverterString.read(from: &buf), 
+                path: FfiConverterString.read(from: &buf), 
+                sizeBytes: FfiConverterUInt64.read(from: &buf), 
+                defaultChecked: FfiConverterBool.read(from: &buf)
+        )
+    }
+
+    public static func write(_ value: FfiStorageTarget, into buf: inout [UInt8]) {
+        FfiConverterString.write(value.id, into: &buf)
+        FfiConverterString.write(value.name, into: &buf)
+        FfiConverterString.write(value.category, into: &buf)
+        FfiConverterString.write(value.description, into: &buf)
+        FfiConverterString.write(value.path, into: &buf)
+        FfiConverterUInt64.write(value.sizeBytes, into: &buf)
+        FfiConverterBool.write(value.defaultChecked, into: &buf)
+    }
+}
+
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFfiStorageTarget_lift(_ buf: RustBuffer) throws -> FfiStorageTarget {
+    return try FfiConverterTypeFfiStorageTarget.lift(buf)
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+public func FfiConverterTypeFfiStorageTarget_lower(_ value: FfiStorageTarget) -> RustBuffer {
+    return FfiConverterTypeFfiStorageTarget.lower(value)
+}
+
+
 public struct FfiSystemMemory: Equatable, Hashable {
     public var totalBytes: UInt64
     public var wiredBytes: UInt64
@@ -828,6 +926,31 @@ public func FfiConverterTypeMemoryError_lower(_ value: MemoryError) -> RustBuffe
 #if swift(>=5.8)
 @_documentation(visibility: private)
 #endif
+fileprivate struct FfiConverterSequenceString: FfiConverterRustBuffer {
+    typealias SwiftType = [String]
+
+    public static func write(_ value: [String], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterString.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [String] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [String]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterString.read(from: &buf))
+        }
+        return seq
+    }
+}
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
 fileprivate struct FfiConverterSequenceTypeFfiHistoryRecord: FfiConverterRustBuffer {
     typealias SwiftType = [FfiHistoryRecord]
 
@@ -874,6 +997,39 @@ fileprivate struct FfiConverterSequenceTypeFfiProcessMemory: FfiConverterRustBuf
         return seq
     }
 }
+
+#if swift(>=5.8)
+@_documentation(visibility: private)
+#endif
+fileprivate struct FfiConverterSequenceTypeFfiStorageTarget: FfiConverterRustBuffer {
+    typealias SwiftType = [FfiStorageTarget]
+
+    public static func write(_ value: [FfiStorageTarget], into buf: inout [UInt8]) {
+        let len = Int32(value.count)
+        writeInt(&buf, len)
+        for item in value {
+            FfiConverterTypeFfiStorageTarget.write(item, into: &buf)
+        }
+    }
+
+    public static func read(from buf: inout (data: Data, offset: Data.Index)) throws -> [FfiStorageTarget] {
+        let len: Int32 = try readInt(&buf)
+        var seq = [FfiStorageTarget]()
+        seq.reserveCapacity(Int(len))
+        for _ in 0 ..< len {
+            seq.append(try FfiConverterTypeFfiStorageTarget.read(from: &buf))
+        }
+        return seq
+    }
+}
+public func cleanStorageTargets(paths: [String])throws  -> UInt64  {
+    return try  FfiConverterUInt64.lift(try rustCallWithError(FfiConverterTypeMemoryError_lift) {
+        uniffiCallStatus in
+    uniffi_memorylens_core_fn_func_clean_storage_targets(
+        FfiConverterSequenceString.lower(paths),uniffiCallStatus
+    )
+})
+}
 public func getHistory()throws  -> [FfiHistoryRecord]  {
     return try  FfiConverterSequenceTypeFfiHistoryRecord.lift(try rustCallWithError(FfiConverterTypeMemoryError_lift) {
         uniffiCallStatus in
@@ -910,6 +1066,13 @@ public func sampleSystem()throws  -> FfiSystemMemory  {
     )
 })
 }
+public func scanStorage() -> [FfiStorageTarget]  {
+    return try!  FfiConverterSequenceTypeFfiStorageTarget.lift(try! rustCall() {
+        uniffiCallStatus in
+    uniffi_memorylens_core_fn_func_scan_storage(uniffiCallStatus
+    )
+})
+}
 
 private enum InitializationResult {
     case ok
@@ -926,6 +1089,9 @@ private let initializationResult: InitializationResult = {
     if bindings_contract_version != scaffolding_contract_version {
         return InitializationResult.contractVersionMismatch
     }
+    if (uniffi_memorylens_core_checksum_func_clean_storage_targets() != 47901) {
+        return InitializationResult.apiChecksumMismatch
+    }
     if (uniffi_memorylens_core_checksum_func_get_history() != 65094) {
         return InitializationResult.apiChecksumMismatch
     }
@@ -939,6 +1105,9 @@ private let initializationResult: InitializationResult = {
         return InitializationResult.apiChecksumMismatch
     }
     if (uniffi_memorylens_core_checksum_func_sample_system() != 41084) {
+        return InitializationResult.apiChecksumMismatch
+    }
+    if (uniffi_memorylens_core_checksum_func_scan_storage() != 43695) {
         return InitializationResult.apiChecksumMismatch
     }
 

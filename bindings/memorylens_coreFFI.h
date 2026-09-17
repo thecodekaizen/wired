@@ -243,6 +243,11 @@ typedef void (*UniffiForeignFutureCompleteVoid)(uint64_t, UniffiForeignFutureRes
     );
 
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_CLEAN_STORAGE_TARGETS
+#define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_CLEAN_STORAGE_TARGETS
+uint64_t uniffi_memorylens_core_fn_func_clean_storage_targets(RustBuffer paths, RustCallStatus *_Nonnull out_status
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_GET_HISTORY
 #define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_GET_HISTORY
 RustBuffer uniffi_memorylens_core_fn_func_get_history(RustCallStatus *_Nonnull out_status
@@ -268,6 +273,12 @@ void uniffi_memorylens_core_fn_func_record_history_snapshot(uint64_t total_bytes
 #ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_SAMPLE_SYSTEM
 #define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_SAMPLE_SYSTEM
 RustBuffer uniffi_memorylens_core_fn_func_sample_system(RustCallStatus *_Nonnull out_status
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_SCAN_STORAGE
+#define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_FN_FUNC_SCAN_STORAGE
+RustBuffer uniffi_memorylens_core_fn_func_scan_storage(RustCallStatus *_Nonnull out_status
     
 );
 #endif
@@ -531,6 +542,12 @@ void ffi_memorylens_core_rust_future_free_void(uint64_t handle
 void ffi_memorylens_core_rust_future_complete_void(uint64_t handle, RustCallStatus *_Nonnull out_status
 );
 #endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_CLEAN_STORAGE_TARGETS
+#define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_CLEAN_STORAGE_TARGETS
+uint16_t uniffi_memorylens_core_checksum_func_clean_storage_targets(void
+    
+);
+#endif
 #ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_GET_HISTORY
 #define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_GET_HISTORY
 uint16_t uniffi_memorylens_core_checksum_func_get_history(void
@@ -558,6 +575,12 @@ uint16_t uniffi_memorylens_core_checksum_func_record_history_snapshot(void
 #ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_SAMPLE_SYSTEM
 #define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_SAMPLE_SYSTEM
 uint16_t uniffi_memorylens_core_checksum_func_sample_system(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_SCAN_STORAGE
+#define UNIFFI_FFIDEF_UNIFFI_MEMORYLENS_CORE_CHECKSUM_FUNC_SCAN_STORAGE
+uint16_t uniffi_memorylens_core_checksum_func_scan_storage(void
     
 );
 #endif

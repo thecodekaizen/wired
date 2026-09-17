@@ -23,6 +23,7 @@ class MemoryMonitor: ObservableObject {
     @Published var systemMemory: FfiSystemMemory?
     @Published var processes: [FfiProcessMemory] = []
     @Published var history: [FfiHistoryRecord] = []
+    @Published var storageTargets: [FfiStorageTarget] = []
     
     private var timer: Timer?
     
@@ -115,6 +116,29 @@ class MemoryMonitor: ObservableObject {
                 self.fetchData()
             } else {
                 print("Purge memory failed")
+            }
+        }
+    }
+    
+    func refreshStorage() {
+        DispatchQueue.global(qos: .userInitiated).async {
+            let targets = scanStorage()
+            DispatchQueue.main.async {
+                self.storageTargets = targets
+            }
+        }
+    }
+    
+    func performStorageCleanup(paths: [String], completion: @escaping () -> Void) {
+        DispatchQueue.global(qos: .userInitiated).async {
+            do {
+                let cleaned = try cleanStorageTargets(paths: paths)
+                print("Cleaned \(cleaned) bytes")
+            } catch {
+                print("Failed to clean storage: \(error)")
+            }
+            DispatchQueue.main.async {
+                completion()
             }
         }
     }

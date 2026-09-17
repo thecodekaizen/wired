@@ -103,6 +103,12 @@ struct ContentView: View {
                     .onAppear {
                         monitor.fetchHistory()
                     }
+                    
+                // Storage Cleaner Tab
+                StorageCleanerView(monitor: monitor)
+                    .tabItem {
+                        Label("Storage", systemImage: "internaldrive")
+                    }
             }
         }
         .frame(width: 400, height: 500)

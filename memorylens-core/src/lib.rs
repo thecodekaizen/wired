@@ -1,6 +1,7 @@
 pub mod memory;
 pub mod process;
 pub mod history;
+pub mod storage;
 
 use std::sync::Mutex;
 use lazy_static::lazy_static;
@@ -107,4 +108,25 @@ pub fn list_processes() -> Vec<FfiProcessMemory> {
         virtual_size: p.virtual_size,
         name: p.name,
     }).collect()
+}
+
+#[derive(uniffi::Record, Debug, Clone)]
+pub struct FfiStorageTarget {
+    pub id: String,
+    pub name: String,
+    pub category: String,
+    pub description: String,
+    pub path: String,
+    pub size_bytes: u64,
+    pub default_checked: bool,
+}
+
+#[uniffi::export]
+pub fn scan_storage() -> Vec<FfiStorageTarget> {
+    storage::scan_storage()
+}
+
+#[uniffi::export]
+pub fn clean_storage_targets(paths: Vec<String>) -> Result<u64, MemoryError> {
+    storage::clean_storage_targets(paths).map_err(|e| MemoryError::ApiError(e))
 }
