@@ -40,56 +40,72 @@ struct ContentView: View {
             
             Divider()
             
-            // Memory Overview
-            if let mem = monitor.systemMemory {
-                MemoryOverviewView(memory: mem)
-                    .padding()
-            } else {
-                Text("Loading Memory Data...")
-                    .frame(height: 100)
-                    .padding()
-            }
-            
-            Divider()
-            
-            // Process Table
-            Table(monitor.processes) {
-                TableColumn("PID", value: \.pid) { proc in
-                    Text("\(proc.pid)")
-                        .foregroundColor(.secondary)
-                }
-                .width(50)
-                
-                TableColumn("Process", value: \.name) { proc in
-                    Text(proc.name)
-                        .fontWeight(denyList.contains(proc.name) ? .regular : .semibold)
-                }
-                
-                TableColumn("Memory", value: \.residentSize) { proc in
-                    Text(formatBytes(proc.residentSize))
-                        .monospacedDigit()
-                }
-                .width(80)
-                
-                TableColumn("Action") { proc in
-                    if !denyList.contains(proc.name) {
-                        Button("Kill") {
-                            selectedProcess = proc
-                            showingKillConfirm = true
-                        }
-                        .buttonStyle(.bordered)
-                        .controlSize(.small)
+            TabView {
+                // Dashboard Tab
+                VStack(spacing: 0) {
+                    // Memory Overview
+                    if let mem = monitor.systemMemory {
+                        MemoryOverviewView(memory: mem)
+                            .padding()
                     } else {
-                        Text("System")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        Text("Loading Memory Data...")
+                            .frame(height: 100)
+                            .padding()
+                    }
+                    
+                    Divider()
+                    
+                    // Process Table
+                    Table(monitor.processes) {
+                        TableColumn("PID", value: \.pid) { proc in
+                            Text("\(proc.pid)")
+                                .foregroundColor(.secondary)
+                        }
+                        .width(50)
+                        
+                        TableColumn("Process", value: \.name) { proc in
+                            Text(proc.name)
+                                .fontWeight(denyList.contains(proc.name) ? .regular : .semibold)
+                        }
+                        
+                        TableColumn("Memory", value: \.residentSize) { proc in
+                            Text(formatBytes(proc.residentSize))
+                                .monospacedDigit()
+                        }
+                        .width(80)
+                        
+                        TableColumn("Action") { proc in
+                            if !denyList.contains(proc.name) {
+                                Button("Kill") {
+                                    selectedProcess = proc
+                                    showingKillConfirm = true
+                                }
+                                .buttonStyle(.bordered)
+                                .controlSize(.small)
+                            } else {
+                                Text("System")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .width(60)
                     }
                 }
-                .width(60)
+                .tabItem {
+                    Label("Dashboard", systemImage: "gauge.with.dots.needle.bottom.100percent")
+                }
+                
+                // History Tab
+                HistoryView(history: monitor.history)
+                    .tabItem {
+                        Label("History", systemImage: "chart.xyaxis.line")
+                    }
+                    .onAppear {
+                        monitor.fetchHistory()
+                    }
             }
-            .frame(height: 300)
         }
-        .frame(width: 400)
+        .frame(width: 400, height: 500)
         .confirmationDialog(
             "Kill Process?",
             isPresented: $showingKillConfirm,

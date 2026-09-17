@@ -8,6 +8,7 @@ targets:
     deploymentTarget: "13.0"
     sources:
       - MemoryLens
+      - MemoryLens/HistoryView.swift
       - memorylens-helperd/HelperProtocol.swift
     info:
       path: MemoryLens/Info.plist
