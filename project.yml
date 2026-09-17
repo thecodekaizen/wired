@@ -6,7 +6,9 @@ targets:
     type: application
     platform: macOS
     deploymentTarget: "13.0"
-    sources: [MemoryLens]
+    sources:
+      - MemoryLens
+      - memorylens-helperd/HelperProtocol.swift
     info:
       path: MemoryLens/Info.plist
       properties:

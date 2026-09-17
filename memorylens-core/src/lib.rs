@@ -1,10 +1,65 @@
 pub mod memory;
 pub mod process;
+pub mod history;
 
-use std::sync::Arc;
+use std::sync::Mutex;
+use lazy_static::lazy_static;
+use std::path::PathBuf;
+
 use uniffi;
 
 uniffi::setup_scaffolding!();
+
+#[derive(uniffi::Record)]
+pub struct FfiHistoryRecord {
+    pub timestamp: i64,
+    pub total_bytes: u64,
+    pub used_bytes: u64,
+}
+
+lazy_static! {
+    static ref HISTORY: Mutex<Option<history::HistoryManager>> = Mutex::new(None);
+}
+
+#[uniffi::export]
+pub fn initialize_history(db_path: String) -> Result<(), MemoryError> {
+    let mut db_guard = HISTORY.lock().unwrap();
+    if db_guard.is_none() {
+        match history::HistoryManager::new(PathBuf::from(db_path)) {
+            Ok(manager) => {
+                *db_guard = Some(manager);
+                Ok(())
+            },
+            Err(e) => Err(MemoryError::ApiError(format!("DB init error: {}", e))),
+        }
+    } else {
+        Ok(())
+    }
+}
+
+#[uniffi::export]
+pub fn record_history_snapshot(total_bytes: u64, used_bytes: u64) -> Result<(), MemoryError> {
+    if let Some(manager) = HISTORY.lock().unwrap().as_ref() {
+        manager.record_snapshot(total_bytes, used_bytes).map_err(|e| MemoryError::ApiError(format!("DB error: {}", e)))
+    } else {
+        Err(MemoryError::ApiError("History not initialized".to_string()))
+    }
+}
+
+#[uniffi::export]
+pub fn get_history() -> Result<Vec<FfiHistoryRecord>, MemoryError> {
+    if let Some(manager) = HISTORY.lock().unwrap().as_ref() {
+        let records = manager.get_history().map_err(|e| MemoryError::ApiError(format!("DB error: {}", e)))?;
+        Ok(records.into_iter().map(|r| FfiHistoryRecord {
+            timestamp: r.timestamp,
+            total_bytes: r.total_bytes,
+            used_bytes: r.used_bytes,
+        }).collect())
+    } else {
+        Err(MemoryError::ApiError("History not initialized".to_string()))
+    }
+}
+
 
 #[derive(uniffi::Record)]
 pub struct FfiSystemMemory {
